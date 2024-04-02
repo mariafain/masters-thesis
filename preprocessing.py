@@ -41,3 +41,17 @@ def clean_text(input_text: str) -> List[str]:
     tokens = [token for token in tokens if len(token) > 2]
 
     return tokens
+
+
+def preprocess_df(df: pd.DataFrame, text_column: str, preprocessed_col_name: str='preprocessed_text') -> pd.DataFrame:
+    """
+    This function preprocesses all texts from the column `text_column` of the dataframe `df` with the
+    `clean_text` function. It returns the dataframe with a new column `preprocessed_col_name` containing
+    preprocessed texts. Note that the texts in the new column are not tokenized.
+    """
+    preprocessed_texts = []
+    for text in df[text_column]:
+        preprocessed_texts.append(clean_text(text))
+    
+    df[preprocessed_col_name] = [' '.join(text) for text in preprocessed_texts]
+    return df
