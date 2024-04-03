@@ -8,25 +8,26 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 
 
-
 def get_tokenized_sequences(x_train, x_valid, x_test):
     tokenizer = Tokenizer(oov_token='<OOV>')
     tokenizer.fit_on_texts(pd.concat([x_train, x_valid], axis=0))
 
-    sequences_train = tokenizer.texts_to_sequences(x_train)
-    sequences_test = tokenizer.texts_to_sequences(x_test)
-    sequences_valid = tokenizer.texts_to_sequences(x_valid)
+    sequences_train = tokenizer.texts_to_sequences(x_train.values.tolist())
+    sequences_test = tokenizer.texts_to_sequences(x_test.values.tolist())
+    sequences_valid = tokenizer.texts_to_sequences(x_valid.values.tolist())
 
     return (sequences_train, sequences_valid, sequences_test), tokenizer
 
 def pad_all_sequences(sequences_train, sequences_valid, sequences_test, max_seq_len, truncating='post'):
-    x_train = pad_sequences(sequences_train, maxlen=max_seq_len, truncating='post')
-    x_test = pad_sequences(sequences_test, maxlen=max_seq_len, truncating='post')
-    x_valid = pad_sequences(sequences_valid, maxlen=max_seq_len, truncating='post')
+    x_train = pad_sequences(sequences_train, maxlen=max_seq_len, truncating=truncating)
+    x_test = pad_sequences(sequences_test, maxlen=max_seq_len, truncating=truncating)
+    x_valid = pad_sequences(sequences_valid, maxlen=max_seq_len, truncating=truncating)
 
     return x_train, x_valid, x_test
 
 def get_embeddings(tokenizer, vocab_size, path_to_glove, embedding_dim):
+    hits = 0
+    misses = 0
     embeddings_index = {}
     # read word vectors
     with open(path_to_glove, encoding='utf8') as f:
@@ -51,11 +52,45 @@ def get_embeddings(tokenizer, vocab_size, path_to_glove, embedding_dim):
 
     return embedding_matrix
 
-def prepare_for_modeling(x_train, x_valid, x_test, max_seq_len, path_to_glove, embedding_dim):
-    (sequences_train, sequences_valid, sequences_test), tokenizer = get_tokenized_sequences(x_train, x_valid, x_test)
 
-    x_train, x_valid, x_test = pad_all_sequences(sequences_train, sequences_valid, sequences_test, max_seq_len)
-    vocab_size = len(tokenizer.index_word) + 1
+class Bilstm:
+    def __init__(self, params_dict) -> None:
+        self.params_dict = params_dict.copy()
+        self.model = None
+        self.history = None
 
-    embedding_matrix = get_embeddings(tokenizer, vocab_size, path_to_glove, embedding_dim)
+    def build_model(self, vocab_size: int, input_len: int, embedding_dim: int, embedding_matrix: np.ndarray) -> None:
+        model = Sequential()
+        model.add(Embedding(vocab_size,
+                            embedding_dim,
+                            input_length=input_len,
+                            weights=[embedding_matrix],
+                            trainable=False))
+        model.add(Bidirectional(LSTM(units=self.params_dict['units'],
+                                    recurrent_dropout=self.params_dict['rec_dropout'],)))
+                                    # return_sequences=True)))
+        model.add(Dense(1, activation='sigmoid'))
 
+        model.compile(loss='binary_crossentropy',
+                    optimizer=Adam(learning_rate=self.params_dict['learning_rate']),
+                    metrics=['accuracy'])
+        model.summary()
+        self.model = model
+    
+    def fit_model(self, x_train, y_train, x_valid, y_valid) -> None:
+        if not self.model:
+            print('The model needs to be built before it is trained!')
+            return
+        
+        callback = EarlyStopping(
+            monitor="val_loss",
+            patience=self.params_dict['patience'],
+            restore_best_weights=True)
+
+        self.history = self.model.fit(x_train,
+                                    y_train,
+                                    validation_data=(x_valid, y_valid),
+                                    verbose=1,
+                                    batch_size=self.params_dict['batch'],
+                                    epochs=self.params_dict['epochs'],
+                                    callbacks=[callback])

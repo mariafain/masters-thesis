@@ -5,9 +5,16 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 
+MAX_SEQ_LEN = 164
 
 
-def stratified_split(df: pd.DataFrame, target_class: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def get_x_y(df: pd.DataFrame, feature: str='preprocessed_text', target_class: str='generated'):
+    x = df[feature]
+    y = np.array(df[target_class])
+    
+    return x, y
+
+def stratified_split(df: pd.DataFrame, target_class: str='generated') -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     This function splits the given dataframe to a training, validation and testing set using the stratified 
     shuffle split. It returns the training set, validation set and the testing set, respectively.
@@ -26,7 +33,7 @@ def stratified_split(df: pd.DataFrame, target_class: str) -> Tuple[pd.DataFrame,
     return train_set, valid_set, test_set
 
 
-def split_data(df: pd.DataFrame, features: List[str], target_class: str, train_size: float=0.6, test_size: float=0.2):
+def split_data(df: pd.DataFrame, features: List[str], target_class: str='generated', train_size: float=0.6, test_size: float=0.2):
     """
     This function ...
     """
@@ -37,13 +44,8 @@ def split_data(df: pd.DataFrame, features: List[str], target_class: str, train_s
     valid_set = df[train_size:train_size + test_size]
     test_set = df[train_size + test_size:]
 
-    x_train = train_set[features].tolist()
-    y_train = np.array(train_set[target_class])
-
-    x_valid = valid_set[features].tolist()
-    y_valid = np.array(valid_set[target_class])
-
-    x_test = test_set[features].tolist()
-    y_test = np.array(test_set[target_class])
+    x_train, y_train = get_x_y(train_set, features, target_class)
+    x_valid, y_valid = get_x_y(valid_set, features, target_class)
+    x_test, y_test = get_x_y(test_set, features, target_class)
 
     return x_train, y_train, x_valid, y_valid, x_test, y_test

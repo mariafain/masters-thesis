@@ -8,6 +8,17 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 
+def get_small_df(df: pd.DataFrame, target_class: str='generated', df_len: int=150000) -> pd.DataFrame:
+    """
+    This function returns a smaller size of the original dataset which contains an equal amount
+    of rows for each target class value.   
+    """
+    df_small = pd.concat([df[:df_len][df[target_class] == 0], df[df_len:][df[target_class] == 1]], ignore_index=True)
+    df_small = df_small.drop(['id'], axis=1)
+
+    return df_small
+
+
 def clean_text(input_text: str) -> List[str]:
     """
     This function preprocesses the input text string. The preprocessing includes
@@ -43,7 +54,7 @@ def clean_text(input_text: str) -> List[str]:
     return tokens
 
 
-def preprocess_df(df: pd.DataFrame, text_column: str, preprocessed_col_name: str='preprocessed_text') -> pd.DataFrame:
+def preprocess_df(df: pd.DataFrame, text_column: str='text', preprocessed_col_name: str='preprocessed_text') -> pd.DataFrame:
     """
     This function preprocesses all texts from the column `text_column` of the dataframe `df` with the
     `clean_text` function. It returns the dataframe with a new column `preprocessed_col_name` containing
