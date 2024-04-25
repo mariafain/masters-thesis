@@ -1,3 +1,4 @@
+import logging
 import math
 from typing import List, Tuple
 
@@ -7,6 +8,19 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 MAX_SEQ_LEN = 164
 
+
+def init_logger(name: str) -> None:
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('[%(levelname)s] - %(message)s')
+
+    ch.setFormatter(formatter)
+
+    logger.addHandler(ch)
 
 def get_x_y(df: pd.DataFrame, feature: str='preprocessed_text', target_class: str='generated'):
     x = df[feature]
@@ -33,6 +47,7 @@ def stratified_split(df: pd.DataFrame, target_class: str='generated') -> Tuple[p
     return train_set, valid_set, test_set
 
 
+# probably delete this
 def split_data(df: pd.DataFrame, features: List[str], target_class: str='generated', train_size: float=0.6, test_size: float=0.2):
     """
     This function ...

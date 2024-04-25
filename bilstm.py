@@ -54,7 +54,8 @@ def get_embeddings(tokenizer, vocab_size, path_to_glove, embedding_dim):
 
 
 class Bilstm:
-    def __init__(self, params_dict) -> None:
+    def __init__(self, name, params_dict) -> None:
+        self.name = name
         self.params_dict = params_dict.copy()
         self.model = None
         self.history = None

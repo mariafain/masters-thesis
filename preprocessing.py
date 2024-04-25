@@ -13,10 +13,12 @@ def get_small_df(df: pd.DataFrame, target_class: str='generated', df_len: int=15
     This function returns a smaller size of the original dataset which contains an equal amount
     of rows for each target class value.   
     """
-    df_small = pd.concat([df[:df_len][df[target_class] == 0], df[df_len:][df[target_class] == 1]], ignore_index=True)
-    df_small = df_small.drop(['id'], axis=1)
+    df_pos = df[df[target_class] == 0]
+    df_neg = df[df[target_class] == 1]
 
-    return df_small
+    df_small =  pd.concat([df_pos[:int(df_len/2)], df_neg[df_neg.shape[0] - int(df_len/2):]], ignore_index=True)
+    
+    return df_small.drop(['id'], axis=1)
 
 
 def clean_text(input_text: str) -> List[str]:
