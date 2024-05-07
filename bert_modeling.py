@@ -4,7 +4,7 @@ import time
 
 import pandas as pd
 
-import bert
+import bert_model
 from preprocessing import get_small_df, preprocess_df
 from utils import stratified_split, get_x_y, MAX_SEQ_LEN, init_logger
 from validation import validate_model_bert
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     x_test = x_test.tolist()
     x_valid = x_valid.tolist()
 
-    x_train, y_train, x_valid, y_valid, preproc = bert.preprocess_bert_data(x_train,
+    x_train, y_train, x_valid, y_valid, preproc = bert_model.preprocess_bert_data(x_train,
                                                                             y_train,
                                                                             x_valid,
                                                                             y_valid,
@@ -49,7 +49,7 @@ if __name__ == "__main__":
                                                                             params_dict['max_features'])
     
     # modeling
-    bert_model = bert.Bert(model_name, params_dict, preproc)
+    bert_model = bert_model.Bert(model_name, params_dict, preproc)
     bert_model.build_learner(x_train, y_train, x_valid, y_valid)
 
     start_time = time.time()

@@ -23,7 +23,7 @@ def init_logger(name: str) -> None:
     logger.addHandler(ch)
 
 def get_x_y(df: pd.DataFrame, feature: str='preprocessed_text', target_class: str='generated'):
-    x = df[feature]
+    x = df[feature] #.values
     y = np.array(df[target_class])
     
     return x, y
