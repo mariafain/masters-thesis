@@ -2,6 +2,7 @@ import re
 import string
 from typing import List
 
+import numpy as np
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -68,3 +69,10 @@ def preprocess_df(df: pd.DataFrame, text_column: str='text', preprocessed_col_na
     
     df[preprocessed_col_name] = [' '.join(text) for text in preprocessed_texts]
     return df
+
+def prepare_data_for_predicting(data: pd.DataFrame):
+    data = preprocess_df(data)
+    x = data['preprocessed_text']
+    y = np.array(data['generated'])
+
+    return x, y

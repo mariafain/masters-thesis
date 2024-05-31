@@ -1,3 +1,4 @@
+import os
 import logging
 import math
 from typing import List, Tuple
@@ -6,7 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 
-MAX_SEQ_LEN = 164
+MAX_SEQ_LEN = 128
 
 
 def init_logger(name: str) -> None:
@@ -46,21 +47,16 @@ def stratified_split(df: pd.DataFrame, target_class: str='generated') -> Tuple[p
 
     return train_set, valid_set, test_set
 
+def load_extra_data(path_to_extra_data):
+    df_palm = pd.read_csv(os.path.join(os.getcwd(), path_to_extra_data, 'LLM_generated_essay_PaLM.csv'), header=0)
+    df_falcon = pd.read_csv(os.path.join(os.getcwd(), path_to_extra_data, 'falcon_180b_v1.csv'), header=0)
+    df_llama = pd.read_csv(os.path.join(os.getcwd(), path_to_extra_data, 'llama_70b_v1.csv'), header=0)
 
-# probably delete this
-def split_data(df: pd.DataFrame, features: List[str], target_class: str='generated', train_size: float=0.6, test_size: float=0.2):
-    """
-    This function ...
-    """
-    train_size = int(math.floor(df.shape[0] * train_size))
-    test_size = int(math.floor(df.shape[0] * test_size))
+    df_llama.rename(columns={'generated_text': 'text'}, inplace=True)
+    df_falcon.rename(columns={'generated_text': 'text'}, inplace=True)
 
-    train_set = df[:train_size]
-    valid_set = df[train_size:train_size + test_size]
-    test_set = df[train_size + test_size:]
+    df_falcon['generated'] = np.ones(df_falcon.shape[0])
+    df_llama['generated'] = np.ones(df_llama.shape[0])
 
-    x_train, y_train = get_x_y(train_set, features, target_class)
-    x_valid, y_valid = get_x_y(valid_set, features, target_class)
-    x_test, y_test = get_x_y(test_set, features, target_class)
-
-    return x_train, y_train, x_valid, y_valid, x_test, y_test
+    df_extras = pd.concat([df_palm[['text', 'generated']], df_falcon[['text', 'generated']], df_llama[['text', 'generated']]], axis=0)
+    return df_extras
