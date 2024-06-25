@@ -8,6 +8,8 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
+from utils import get_x_y
+
 
 def get_small_df(df: pd.DataFrame, target_class: str='generated', df_len: int=150000) -> pd.DataFrame:
     """
@@ -71,8 +73,10 @@ def preprocess_df(df: pd.DataFrame, text_column: str='text', preprocessed_col_na
     return df
 
 def prepare_data_for_predicting(data: pd.DataFrame):
+    """
+    Prepares a pandas DataFrame for model prediction by preprocessing the texts and dividing the dataset to X and y. 
+    """
     data = preprocess_df(data)
-    x = data['preprocessed_text']
-    y = np.array(data['generated'])
+    x, y = get_x_y(data)
 
     return x, y

@@ -4,8 +4,12 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 
 
 def get_predictions(classifier, x_test):
+    """
+    Returns the classifiers' predicted probabilities of `x_test` and the binary predictions, respectively.
+    """
     pred_probas = classifier.model.predict(x_test)
     predictions = np.where(pred_probas.max(axis=-1) > 0.5, 1, 0)
+
     return pred_probas, predictions
 
 def acc_loss(history, save: bool):
@@ -58,6 +62,12 @@ def roc_score(model_name, y_true, y_pred_proba, save):
     plt.show()
 
 def validate_classifier(classifier, x_test, y_true, new_data=False, save=False):
+    """
+    This is a function for validating a classifier. A classification report is calculated as well as
+    accuracy, recall and F1 score, the confusion matrix is plotted. If the argument `new_data` is set to False, 
+    this means that the classifier is being validated on the training set after training and additionally the accuracy and loss
+    functions are plotted, as well as the ROC curve.  
+    """
     print('#### VALIDATION ####')
     predictions_proba, y_pred = get_predictions(classifier, x_test)
     
@@ -71,16 +81,4 @@ def validate_classifier(classifier, x_test, y_true, new_data=False, save=False):
     print('F1-score: ', f1_score(y_true, y_pred))
 
     conf_matrix(y_true, y_pred, save)
-
-# def validate_model_bilstm(bilstm, x_test, y_true):
-#     print('#### VALIDATION ####')
-#     print('Test set evaluation:')
-#     bilstm.model.evaluate(x_test, y_true, verbose=1)
-
-#     y_pred = get_predictions_bilstm(bilstm, x_test)
-#     print('Classification report:')
-#     print(classification_report(y_true, y_pred))
-
-#     acc_loss(bilstm.history)
-#     conf_matrix(y_true, y_pred.flatten())
    

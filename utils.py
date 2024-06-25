@@ -1,7 +1,6 @@
 import os
 import logging
-import math
-from typing import List, Tuple
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -48,6 +47,10 @@ def stratified_split(df: pd.DataFrame, target_class: str='generated') -> Tuple[p
     return train_set, valid_set, test_set
 
 def load_extra_data(path_to_extra_data):
+    """
+    Loads extra datasets needed for validation. The argument `path_to_extra_data` is the directory where the extra data is stored.
+    Returns a concatenated pandas Dataframe with the three extra datasets.
+    """
     df_palm = pd.read_csv(os.path.join(os.getcwd(), path_to_extra_data, 'LLM_generated_essay_PaLM.csv'), header=0)
     df_falcon = pd.read_csv(os.path.join(os.getcwd(), path_to_extra_data, 'falcon_180b_v1.csv'), header=0)
     df_llama = pd.read_csv(os.path.join(os.getcwd(), path_to_extra_data, 'llama_70b_v1.csv'), header=0)
